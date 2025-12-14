@@ -61,6 +61,7 @@ def create_graph():
     - HABLA SIEMPRE EN ESPAÑOL.
     - Sé conciso.
     - Si el usuario solo saluda, responde amablemente sin usar herramientas.
+    - **IMPORTANTE:** Si te conectas a un servidor como usuario NO-ROOT (ej. 'ivan'), recuerda anteponer `sudo` a los comandos que lo requieran (apt, systemctl, reboot). NO pidas la contraseña de sudo, asume que está configurado como NOPASSWD.
     """
     
     # Create ReAct Agent (Agent -> Tools -> Agent)
