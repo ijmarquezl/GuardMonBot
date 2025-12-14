@@ -1,0 +1,13 @@
+[Unit]
+Description=GuardMonBot AI SysAdmin
+After=network.target
+
+[Service]
+User=root
+WorkingDirectory=/opt/guardmonbot
+ExecStart=/opt/guardmonbot/.venv/bin/python run.py
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

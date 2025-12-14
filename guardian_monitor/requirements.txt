@@ -1,0 +1,9 @@
+langgraph
+langchain
+langchain-openai
+paramiko
+pydantic
+python-dotenv
+langchain-ollama
+python-telegram-bot
+duckduckgo-search

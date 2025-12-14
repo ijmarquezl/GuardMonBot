@@ -1,0 +1,22 @@
+name: Deploy to Proxmox
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Execute Remote Deployment
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.SSH_KEY }}
+          port: 22
+          script: |
+            chmod +x /opt/guardmonbot/scripts/deploy.sh
+            bash /opt/guardmonbot/scripts/deploy.sh
