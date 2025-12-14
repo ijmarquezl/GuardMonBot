@@ -2,6 +2,7 @@ import os
 import json
 from langchain_ollama import ChatOllama
 from langgraph.prebuilt import create_react_agent
+from langgraph.checkpoint.memory import MemorySaver
 from guardian_monitor.tools import get_system_metrics, web_search, execute_terminal_command
 
 def create_graph():
@@ -64,7 +65,8 @@ def create_graph():
     - **IMPORTANTE:** Si te conectas a un servidor como usuario NO-ROOT (ej. 'ivan'), recuerda anteponer `sudo` a los comandos que lo requieran (apt, systemctl, reboot). NO pidas la contraseña de sudo, asume que está configurado como NOPASSWD.
     """
     
-    # Create ReAct Agent (Agent -> Tools -> Agent)
-    graph = create_react_agent(llm, tools, prompt=system_prompt)
+    # Create ReAct Agent (Agent -> Tools -> Agent) with Memory
+    memory = MemorySaver()
+    graph = create_react_agent(llm, tools, prompt=system_prompt, checkpointer=memory)
     
     return graph

@@ -153,10 +153,12 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
              BotGlobals.graph = create_graph()
 
         print(f"Invoking Agent with: {user_message}")
-        # Invoke Graph
+        # Invoke Graph with Thread ID (Memory)
         inputs = {"messages": [("user", user_message)]}
-        # Use ainvoke
-        response = await BotGlobals.graph.ainvoke(inputs)
+        config = {"configurable": {"thread_id": str(chat_id)}}
+        
+        # Use ainvoke with config
+        response = await BotGlobals.graph.ainvoke(inputs, config=config)
         
         # Get final message
         final_message = response["messages"][-1].content
