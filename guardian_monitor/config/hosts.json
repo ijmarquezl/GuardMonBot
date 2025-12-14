@@ -6,12 +6,20 @@
             "description": "The Guardian Agent Container (Self)"
         },
         {
-            "name": "example-remote",
+            "name": "Nage",
             "type": "ssh",
-            "ip": "192.168.1.X",
-            "user": "root",
+            "ip": "10.29.93.2",
+            "user": "ivan",
             "key_path": "/root/.ssh/id_rsa",
-            "description": "Example Remote Server (Edit in config/hosts.json)"
+            "description": "Main Workstation"
+        },
+        {
+            "name": "Senpai",
+            "type": "ssh",
+            "ip": "10.29.93.10",
+            "user": "ivan",
+            "key_path": "/root/.ssh/id_rsa",
+            "description": "Docker Container Server"
         }
     ]
 }

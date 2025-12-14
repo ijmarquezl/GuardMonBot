@@ -24,7 +24,7 @@ def _load_host_config(target_host: str):
             data = json.load(f)
             
         for host in data.get("hosts", []):
-            if host["name"] == target_host:
+            if host["name"].lower() == target_host.lower():
                 return host
     except Exception as e:
         print(f"Error reading hosts.json: {e}")
