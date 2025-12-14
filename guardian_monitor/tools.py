@@ -35,6 +35,11 @@ async def _async_get_metrics(host: str):
         return await loop.run_in_executor(None, run_command, cmd, host)
 
     # 1. CPU Usage (Top)
+    # Check connectivity FIRST
+    connectivity_check = await run("echo 'ok'")
+    if "Error" in connectivity_check or "failed" in connectivity_check:
+        return f"CRITICAL ERROR: Could not connect to host '{host}'. Details: {connectivity_check}\nPlease verify 'guardian_monitor/config/hosts.json'."
+
     try:
         top_cpu = await run("top -bn2 -d 0.5 | grep 'Cpu(s)' | tail -n 1")
         parts = top_cpu.split(",")
