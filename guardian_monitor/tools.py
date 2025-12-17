@@ -3,6 +3,9 @@ import os
 from langchain_core.tools import tool
 from guardian_monitor.ssh_tools import run_command
 from guardian_monitor.search_tools import search_duckduckgo
+# Knowledge Path
+import os
+KNOWLEDGE_FILE = os.path.join(os.path.dirname(__file__), "knowledge.md")
 
 @tool
 def get_system_metrics(target_host: str = "local") -> str:
@@ -123,3 +126,62 @@ def execute_terminal_command(command: str, target_host: str = "local") -> str:
     If a modification (kill, rm, restart) is needed, YOU MUST ASK THE USER FIRST.
     """
     return run_command(command, target_host)
+
+@tool
+def save_knowledge(topic: str, content: str) -> str:
+    """
+    Saves useful information to permanent memory.
+    Use this when the user teaches you something new (e.g., "To restart app X, do Y").
+    
+    Args:
+        topic: A short title for the knowledge (e.g., "Nginx Restart").
+        content: The detailed instruction or fact.
+    """
+    try:
+        entry = f"\n- **{topic}**: {content}"
+        with open(KNOWLEDGE_FILE, "a") as f:
+            f.write(entry)
+        return f"Successfully saved knowledge about '{topic}'."
+    except Exception as e:
+        return f"Error saving knowledge: {e}"
+
+@tool
+def read_system_logs(target_host: str = "local", log_source: str = "journal_errors", lines: int = 50) -> str:
+    """
+    Reads system logs to diagnose errors.
+    
+    Args:
+        target_host: The server to check (default 'local').
+        log_source: One of ['journal_errors', 'journal_all', 'auth', 'syslog', 'dmesg'].
+                   - 'journal_errors': Critical system errors (since boot). BEST FOR DEBUGGING.
+                   - 'auth': Login attempts (ssh).
+        lines: Number of lines to read (default 50).
+    """
+    valid_sources = {
+        "journal_errors": "journalctl -p 3 -xb --no-pager",
+        "journal_all": "journalctl -xb --no-pager",
+        "auth": "cat /var/log/auth.log",
+        "syslog": "cat /var/log/syslog",
+        "dmesg": "dmesg -T"
+    }
+    
+    cmd = valid_sources.get(log_source, "journalctl -p 3 -xb --no-pager")
+    full_cmd = f"{cmd} | tail -n {lines}"
+    
+    # Run helper function for async capability if needed, but run_command is sync compatible here
+    # Actually tools.py calls sync run_command inside async wrappers in other tools.
+    # Let's keep it simple and blocking for now as it's just text reading.
+    # Wait, tools.py structure usually uses _async wrapper. Let's do that to be safe.
+    
+    import asyncio
+    try:
+        loop = asyncio.get_event_loop()
+    except RuntimeError:
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        
+    return loop.run_until_complete(async_run_log_cmd(full_cmd, target_host))
+
+async def async_run_log_cmd(cmd, host):
+    loop = asyncio.get_event_loop()
+    return await loop.run_in_executor(None, run_command, cmd, host)

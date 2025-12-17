@@ -3,7 +3,8 @@ import json
 from langchain_ollama import ChatOllama
 from langgraph.prebuilt import create_react_agent
 from langgraph.checkpoint.memory import MemorySaver
-from guardian_monitor.tools import get_system_metrics, web_search, execute_terminal_command
+from langgraph.checkpoint.memory import MemorySaver
+from guardian_monitor.tools import get_system_metrics, web_search, execute_terminal_command, save_knowledge, read_system_logs
 
 def create_graph():
     """
@@ -30,6 +31,19 @@ def create_graph():
         print(f"Error loading hosts.json: {e}")
     
     hosts_str = "\n    ".join(available_hosts) if available_hosts else "- local: El Agente mismo."
+    
+    # Load Knowledge Base
+    knowledge_path = os.path.join(os.path.dirname(__file__), "knowledge.md")
+    knowledge_content = ""
+    try:
+        if os.path.exists(knowledge_path):
+            with open(knowledge_path, "r") as f:
+                knowledge_content = f.read()
+    except Exception as e:
+        print(f"Error loading knowledge config: {e}")
+        
+    # Update Tools List
+    tools = [get_system_metrics, web_search, execute_terminal_command, save_knowledge, read_system_logs]
 
     # System Prompt
     system_prompt = f"""Eres 'GuardMonBot', un Agente Experto en Linux y SysAdmin.
@@ -63,6 +77,15 @@ def create_graph():
     - Sé conciso.
     - Si el usuario solo saluda, responde amablemente sin usar herramientas.
     - **IMPORTANTE:** Si te conectas a un servidor como usuario NO-ROOT (ej. 'ivan'), recuerda anteponer `sudo` a los comandos que lo requieran (apt, systemctl, reboot). NO pidas la contraseña de sudo, asume que está configurado como NOPASSWD.
+    
+    PROTOCOLO DE RESILIENCIA:
+    - Si un comando falla, ¡NO TE RINDAS! 
+    - Analiza el error. Si es un typo, corrígelo. Si falta un paquete, suguiere instalarlo.
+    - Intenta al menos una alternativa antes de reportar fracaso al usuario.
+    - Usa 'save_knowledge' cuando el usuario te enseñe algo nuevo para no olvidarlo.
+    
+    CONOCIMIENTOS APRENDIDOS (MEMORIA A LARGO PLAZO):
+    {knowledge_content}
     """
     
     # Create ReAct Agent (Agent -> Tools -> Agent) with Memory
